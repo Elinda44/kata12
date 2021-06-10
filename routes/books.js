@@ -108,5 +108,89 @@ router.get("/getsoldbooks/everyhour", async (req,res) => {
     }catch(err){
         res.send(err);
     }
+});
+
+router.get("/getsoldbooks/perday", async (req,res) => {
+    let transactions;
+    let currentDate = new Date();
+    let pastDayMilliseconds = currentDate.getTime() - 79200000;
+    let yesterday = new Date(pastDayMilliseconds);
+    let month = ('0' + (yesterday.getMonth()+1)).slice(-2);
+    let prevDay = new Date(`${yesterday.getFullYear()}-${month}-${('0' + (yesterday.getDate()-1)).slice(-2)}`);
+    let nextDay = new Date(`${yesterday.getFullYear()}-${month}-${('0' + (yesterday.getDate())).slice(-2)}`);
+
+    try{
+        transactions = await Books_transactions.aggregate([
+            {
+                $match:{
+                    date:{
+                        $gte:prevDay,
+                        $lt:nextDay
+                    }
+                }
+            },
+            {$addFields:{book_obj_id:{$toObjectId:"$book_id"}}},
+            {
+                $lookup:{
+                    from:"books",
+                    localField:"book_obj_id",
+                    foreignField:"_id",
+                    as:"book"
+                }
+            },
+            {$unwind:"$book"},
+            {
+                $project:{
+                    _id:0,
+                    book_name:"$book.name",
+                    book_author:"$book.author",
+                    qty_sold:"$qty"
+                }
+            }
+        ])
+        res.send(transactions);
+    }catch(err){
+        res.send(err);
+    }
+});
+
+router.get("/getsoldbooks/realtime", async (req,res) => {
+    let transactions;
+    let currentDate = new Date();
+    let pastDayMilliseconds = currentDate.getTime() - 79200000;
+    let yesterday = new Date(pastDayMilliseconds);
+    
+    try{
+        transactions = await Books_transactions.aggregate([
+            {
+                $match:{
+                    date:{
+                        $gte:yesterday
+                    }
+                }
+            },
+            {$addFields:{book_obj_id:{$toObjectId:"$book_id"}}},
+            {
+                $lookup:{
+                    from:"books",
+                    localField:"book_obj_id",
+                    foreignField:"_id",
+                    as:"book"
+                }
+            },
+            {$unwind:"$book"},
+            {
+                $project:{
+                    _id:0,
+                    book_name:"$book.name",
+                    book_author:"$book.author",
+                    qty_sold:"$qty"
+                }
+            }
+        ])
+        res.send(transactions);
+    }catch(err){
+        res.send(err);
+    }
 })
 module.exports = router;
