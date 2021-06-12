@@ -64,11 +64,12 @@ router.get("/getsoldbooks/everyhour", async (req,res) => {
 
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth()+1;
-    const currentDateString = currentDate.getDate()+"/" + currentMonth + "/" + currentDate.getFullYear() + " " + currentDate.getHours() + ":00";
+    const month = ("0" + (currentDate.getMonth()+1)).slice(-2);
+    const currentDateString = month+"/"+currentDate.getDate() + "/" + currentDate.getFullYear() + " " + ("0" + (currentDate.getHours())).slice(-2) + ":00";
     const dateInMilliseconds = Date.parse(currentDateString);
     const finalDateOne = new Date(dateInMilliseconds);
     const finalDateTwo = new Date(dateInMilliseconds - 86400000);
-    console.log(finalDateOne,finalDateTwo)
+    console.log(currentDateString,month)
     try{
         currentBooks = await Books_transactions.aggregate([
             {
