@@ -12,7 +12,15 @@ router.get("/", async (req,res) => {
         res.send(err);
     }
 });
-
+router.get("/getsingle/:id", async (req,res) => {
+    try{
+        const book = await Books.findById(req.params.id);
+        res.send(book);
+        console.log(book);
+    }catch(err){
+        res.send(err);
+    }
+})
 router.post("/sell", async (req,res) => {
     const {book_id,qty} = req.body;
     const current_date = new Date();
@@ -60,6 +68,7 @@ router.get("/getsoldbooks/everyhour", async (req,res) => {
     const dateInMilliseconds = Date.parse(currentDateString);
     const finalDateOne = new Date(dateInMilliseconds);
     const finalDateTwo = new Date(dateInMilliseconds - 86400000);
+    console.log(finalDateOne,finalDateTwo)
     try{
         currentBooks = await Books_transactions.aggregate([
             {
